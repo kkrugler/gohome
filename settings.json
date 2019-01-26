@@ -1,0 +1,36 @@
+{
+	"window": {
+		"size": [1140, 920],
+		"title": "Go Home!",
+		"background_color": [0, 153, 0]
+	},
+	"card": {
+		"size": [124, 186],
+		"front_sprite_path": "img/cards/",
+		"back_sprite_file": "img/back-side.png",
+		"move_speed": 80
+	},
+	"deck": {
+		"position": [20, 20],
+		"offset": [0.2, 0]
+	},
+    "stack": {
+        "deck_offset": [30, 0],
+        "inner_offset": [40, 0]
+    },
+	"pile": {
+        "position": [20, 240],
+        "offset": [160, 0],
+		"inner_offset": [0, 40]
+	},
+    "foundation": {
+        "position": [500, 20],
+        "offset": [160, 0],
+		"inner_offset": [0, 0]
+    },
+    "gui": {
+        "restart_button": [20, 850, 100, 50],
+        "win_label": [300, 480],
+		"win_text_size": 60
+    }
+}
