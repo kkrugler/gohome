@@ -6,6 +6,8 @@ try:
 
     from pygame_cards import controller, game_app, deck, card_holder, enums
     import holders
+    import player
+
 except ImportError as err:
     print("Fail loading a module in file:", __file__, "\n", err)
     sys.exit(2)
@@ -13,19 +15,64 @@ except ImportError as err:
 
 class GoHomeController(controller.Controller):
 
+    '''
+    One-time setup of game environment
+    '''
+    def build_objects(self):
+        # Set up music
+        music = os.path.join(os.getcwd(), 'data/fish.wav')
+        pygame.mixer.music.load(music)
+
+        # TODO figure out how this gets invoked.
+        setattr(deck.Deck, "render", holders.draw_empty_card_pocket)
+
+        deck_pos = self.settings_json["deck"]["position"]
+        deck_offset = self.settings_json["deck"]["offset"]
+        self.custom_dict["deck"] = deck.Deck(deck_pos, deck_offset, None)
+        self.add_rendered_object(self.custom_dict["deck"])
+
+        revealed_pos = self.settings_json["revealed"]["position"]
+        revealed_offset = self.settings_json["revealed"]["offset"]
+        self.custom_dict["revealed"] = [None] * 3
+
+        for i in range(3):
+            self.custom_dict["revealed"][i] = holders.DeckRevealed(revealed_pos, revealed_offset)
+            self.add_rendered_object(self.custom_dict["revealed"][i])
+            revealed_pos = (revealed_pos[0] + revealed_offset[0], revealed_pos[1] + revealed_offset[1])
+
+        user_pos = self.settings_json["computer_hand"]["position"]
+        user_offset = self.settings_json["computer_hand"]["offset"]
+        self.custom_dict["computer_hand"] = player.ComputerHand(user_pos, user_offset)
+        self.add_rendered_object(self.custom_dict["computer_hand"])
+
+        user_pos = self.settings_json["user_hand"]["position"]
+        user_offset = self.settings_json["user_hand"]["offset"]
+        self.custom_dict["user_hand"] = player.PlayerHand(user_pos, user_offset)
+        self.add_rendered_object(self.custom_dict["user_hand"])
+
+        user_pos = self.settings_json["sets"]["position"]
+        user_offset = self.settings_json["sets"]["offset"]
+        self.custom_dict["sets"] = holders.CompletedSet(user_pos, user_offset)
+        self.add_rendered_object(self.custom_dict["sets"])
+
+        self.custom_dict["grabbed_cards_holder"] = holders.GrabbedCardsHolder((0, 0), 0)
+        self.add_rendered_object(self.custom_dict["grabbed_cards_holder"])
+        self.custom_dict["owner_of_grabbed_card"] = None
+
+        self.gui_interface.show_button(self.settings_json["gui"]["restart_button"],
+                                       self.restart_game, "Restart")
+
+
     def restart_game(self):
-        self.custom_dict["deck_discard"].move_all_cards(self.custom_dict["deck"])
-        self.custom_dict["stack"].move_all_cards(self.custom_dict["deck"])
+        pygame.mixer.music.rewind()
 
-        for foundation in self.custom_dict["foundations"]:
-            foundation.move_all_cards(self.custom_dict["deck"])
-
-        for pile in self.custom_dict["piles"]:
-            pile.move_all_cards(self.custom_dict["deck"])
+        self.custom_dict["revealed"].move_all_cards(self.custom_dict["deck"])
+        self.custom_dict["user_hand"].move_all_cards(self.custom_dict["deck"])
 
         if isinstance(self.gui_interface, game_app.GameApp.GuiInterface):
             self.gui_interface.hide_by_id("win_label1")
             self.gui_interface.hide_by_id("win_label2")
+
         self.start_game()
 
     def start_game(self):
@@ -33,73 +80,29 @@ class GoHomeController(controller.Controller):
         self.custom_dict["deck"].shuffle()
         #self.deal_cards()
 
-        for i in range(1, 8):
-            for j in range(0, i):
-                card_ = self.custom_dict["deck"].pop_top_card()
-                if j == i - 1:
-                    card_.flip()
+        for i in range(3):
+            card_ = self.custom_dict["deck"].pop_top_card()
+            card_.flip()
+            self.custom_dict["revealed"][i].add_card(card_)
 
-                self.custom_dict["piles"][i-1].add_card(card_)
+        for i in range(7):
+            card_ = self.custom_dict["deck"].pop_top_card()
+            card_.flip()
+            self.custom_dict["user_hand"].add_card(card_)
+
+        self.custom_dict["user_hand"].sort_cards()
+        self.check_for_sets()
 
         self.custom_dict["game_start_time"] = pygame.time.get_ticks()
+        #pygame.mixer.music.play(-1)
 
-    def build_objects(self):
-        setattr(deck.Deck, "render", holders.draw_empty_card_pocket)
-
-        deck_pos = self.settings_json["deck"]["position"]
-        deck_offset = self.settings_json["deck"]["offset"]
-        self.custom_dict["deck"] = deck.Deck(enums.DeckType.full, deck_pos, deck_offset, None)
-
-        self.custom_dict["deck_discard"] = holders.DeckDiscard()
-
-        deck_pos = self.custom_dict["deck"].pos
-        x_offset = self.settings_json["stack"]["deck_offset"][0] \
-                   + self.settings_json["card"]["size"][0]
-        y_offset = self.settings_json["stack"]["deck_offset"][1]
-        stack_pos = deck_pos[0] + x_offset, deck_pos[1] + y_offset
-        stack_offset = self.settings_json["stack"]["inner_offset"]
-        self.custom_dict["stack"] = card_holder.CardsHolder(stack_pos, stack_offset,
-                                                            enums.GrabPolicy.can_single_grab)
-
-        self.add_rendered_object((self.custom_dict["deck"], self.custom_dict["stack"]))
-
-        self.custom_dict["piles"] = []
-        pile_pos = self.settings_json["pile"]["position"]
-        pile_offset = self.settings_json["pile"]["offset"]
-        pile_inner_offset = self.settings_json["pile"]["inner_offset"]
-        for i in range(1, 8):
-            pile = holders.Pile(pile_pos, pile_inner_offset, enums.GrabPolicy.can_multi_grab)
-            pile_pos = pile_pos[0] + pile_offset[0], pile_pos[1] + pile_offset[1]
-            self.add_rendered_object(pile)
-            self.custom_dict["piles"].append(pile)
-
-        foundation_pos = self.settings_json["foundation"]["position"]
-        foundation_offset = self.settings_json["foundation"]["offset"]
-        foundation_inner_offset = self.settings_json["foundation"]["inner_offset"]
-        self.custom_dict["foundations"] = []
-        for i in range(0, 4):
-            self.custom_dict["foundations"].append(holders.Foundation(foundation_pos,
-                                                                      foundation_inner_offset))
-            foundation_pos = (foundation_pos[0] + foundation_offset[0],
-                              foundation_pos[1] + foundation_offset[1])
-            self.add_rendered_object(self.custom_dict["foundations"][i])
-
-        self.custom_dict["grabbed_cards_holder"] = holders.GrabbedCardsHolder((0, 0),
-                                                                              pile_inner_offset)
-        self.add_rendered_object(self.custom_dict["grabbed_cards_holder"])
-        self.custom_dict["owner_of_grabbed_card"] = None
-
-        self.gui_interface.show_button(self.settings_json["gui"]["restart_button"],
-                                       self.restart_game, "Restart")
+    def check_for_sets(self):
+        sets = self.custom_dict["user_hand"].find_sets()
+        for card in sets:
+            self.custom_dict["sets"].add_card(card)
 
     def check_win(self):
-        win = True
-        for found in self.custom_dict["foundations"]:
-            if len(found.cards) > 0 and found.cards[-1].rank == enums.Rank.king:
-                continue
-            else:
-                win = False
-                break
+        win = False
         if win:
             self.show_win_ui()
 
@@ -129,84 +132,37 @@ class GoHomeController(controller.Controller):
             self.process_mouse_down(pos)
         else:
             self.process_mouse_up(pos)
+
         if double_click:
             self.process_double_click(pos)
 
     def process_mouse_down(self, pos):
-        if self.custom_dict["deck"].is_clicked(pos):
-            self.process_deck_click()
-            return
+        for obj in self.rendered_objects:
+            grabbed_cards = obj.try_grab_card(pos)
+            if grabbed_cards is not None:
+                for card_ in grabbed_cards:
+                    if (card_.back_up):
+                        card_.flip()
+                    self.custom_dict["user_hand"].add_card(card_, True)
 
-        if len(self.custom_dict["grabbed_cards_holder"].cards) == 0:
-            for obj in self.rendered_objects:
-                grabbed_cards = obj.try_grab_card(pos)
-                if grabbed_cards is not None:
-                    for card_ in grabbed_cards:
-                        self.custom_dict["grabbed_cards_holder"].add_card(card_)
-                    self.custom_dict["owner_of_grabbed_card"] = obj
-                    break
+                self.custom_dict["user_hand"].sort_cards()
+                self.check_for_sets()
+
+                if obj.refill & (not self.custom_dict["deck"].is_empty()):
+                    deck_card = self.custom_dict["deck"].pop_top_card()
+                    deck_card.flip()
+                    obj.add_card(deck_card, True)
+
+                break
 
     def process_mouse_up(self, pos):
-        if len(self.custom_dict["grabbed_cards_holder"].cards) > 0:
-            for obj in self.rendered_objects:
-                dropped_cards = False
-                if hasattr(obj, "can_drop_card") and hasattr(obj, "check_collide"):
-                    if (obj.check_collide(self.custom_dict["grabbed_cards_holder"].cards[0]) and
-                            obj.can_drop_card(self.custom_dict["grabbed_cards_holder"].cards[0])):
-                        dropped_cards = True
-                        while len(self.custom_dict["grabbed_cards_holder"].cards) != 0:
-                            obj.add_card(self.custom_dict["grabbed_cards_holder"].pop_bottom_card())
-                        break
-            if self.custom_dict["owner_of_grabbed_card"] is not None:
-                while len(self.custom_dict["grabbed_cards_holder"].cards) != 0:
-                    self.custom_dict["owner_of_grabbed_card"].add_card(
-                        self.custom_dict["grabbed_cards_holder"].pop_bottom_card())
-                if dropped_cards:
-                    if isinstance(self.custom_dict["owner_of_grabbed_card"], holders.Pile):
-                        self.custom_dict["owner_of_grabbed_card"].open_top_card()
-                    elif isinstance(self.custom_dict["owner_of_grabbed_card"], holders.Foundation):
-                        self.check_win()
-                self.custom_dict["owner_of_grabbed_card"] = None
-                _ = pos
-
-    def process_deck_click(self):
-        while len(self.custom_dict["stack"].cards) != 0:
-            card_ = self.custom_dict["stack"].pop_bottom_card()
-            if card_ is not None:
-                card_.flip()
-                self.custom_dict["deck_discard"].add_card(card_)
-
-        if len(self.custom_dict["deck"].cards) == 0:
-            if len(self.custom_dict["deck_discard"].cards) == 0:
-                return  # Cards in Deck ended
-            else:
-                self.custom_dict["deck_discard"].move_all_cards(self.custom_dict["deck"])
-                return  # Not drawing cards to stack when flipped the deck
-
-        for i in range(0, 3):
-            card_ = self.custom_dict["deck"].pop_top_card()
-            if card_ is None:
-                break
-            card_.flip()
-            self.custom_dict["stack"].add_card(card_)
-            _ = i
+        return
 
     def process_double_click(self, pos):
-        search_list = self.custom_dict["piles"] + [self.custom_dict["stack"]]
-        for holder in search_list:
-            if len(holder.cards) != 0 and holder.is_clicked(pos):
-                card_ = holder.cards[-1]
-                for found in self.custom_dict["foundations"]:
-                    if found.can_drop_card(card_):
-                        card_ = holder.pop_top_card()
-                        self.add_move([card_], found.pos)  # animate card move to foundation
-                        found.add_card(card_)
-                        self.check_win()
-                        if isinstance(holder, holders.Pile):
-                            holder.open_top_card()
-                        break
-                break
+        return
 
+    def cleanup(self):
+        pygame.mixer.music.stop()
 
 def main():
     json_path = os.path.join(os.getcwd(), 'settings.json')

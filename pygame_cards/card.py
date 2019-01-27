@@ -11,11 +11,11 @@ except ImportError as err:
 class Card(game_object.GameObject):
     """ This class represents a card. """
 
-    def __init__(self, suit, rank, pos, back_up=False):
+    def __init__(self, persona, rank, pos, back_up=False):
         game_object.GameObject.__init__(self)
-        self.suit = suit
+        self.persona = persona
         self.rank = rank
-        self.sprite = card_sprite.CardSprite(suit, rank, pos, back_up)
+        self.sprite = card_sprite.CardSprite(persona, rank, pos, back_up)
         #self.back_sprite = card_sprite.CardBackSprite(pos)
         self.back_up = back_up
 
@@ -85,3 +85,6 @@ class Card(game_object.GameObject):
         """
         self.sprite.offset_pos(pos)
         #self.back_sprite.offset_pos(pos)
+
+    def __eq__(self, other):
+        return (self.persona == other.persona) & (self.rank == other.rank)

@@ -29,7 +29,11 @@ class RenderThread(threading.Thread):
         """ Starts endless loop and renders game objects in it """
         while not self.app.stopped:
             self.app.clock.tick(300)
-            self.app.render()
+            try:
+                self.app.render()
+            except Exception as e:
+                print("An exception occurred: " + str(e))
+
             pygame.display.flip()
 
 
@@ -260,7 +264,7 @@ class GameApp(object):
         self.background_color = self.settings_json["window"]['background_color']
         self.size = self.settings_json["window"]["size"]
 
-        # Init class members from other modules to avoid having a global varialbe for settings_json
+        # Init class members from other modules to avoid having a global variabl for settings_json
         card_holder.CardsHolder.card_json = self.settings_json["card"]
         card_sprite.CardSprite.card_json = self.settings_json["card"]
 

@@ -33,6 +33,9 @@ class AbstractPygameCardSprite(pygame.sprite.Sprite):
     """ Abstract base class for Card sprite with pygame routines implemented in default methods. """
 
     def __init__(self, pos):
+        # TODO figure out why this call fails
+        # super().__init__(self)
+
         self.rect = [pos[0], pos[1], 0, 0]
         self.mouse_offset = [0, 0]
         self.clicked = False
@@ -100,13 +103,13 @@ class CardSprite(AbstractPygameCardSprite):
 
     card_json = None
 
-    def __init__(self, suit, rank, pos, back_up=False):
+    def __init__(self, persona, rank, pos, back_up=False):
         if CardSprite.card_json is None:
             raise ValueError('CardSprite.card_json is not initialized')
         AbstractPygameCardSprite.__init__(self, pos)
 
         temp_image = pygame.image.load(get_img_full_path(
-            self.get_image_path(suit, rank))).convert_alpha()
+            self.get_image_path(persona, rank))).convert_alpha()
         self.image = pygame.transform.scale(temp_image, CardSprite.card_json["size"])
         self.rect = self.image.get_rect()
         self.rect[0] = pos[0]
@@ -127,50 +130,28 @@ class CardSprite(AbstractPygameCardSprite):
         self.back_up = not self.back_up
 
     @staticmethod
-    def get_image_path(suit, rank):
+    def get_image_path(persona, rank):
         path = CardSprite.card_json["front_sprite_path"]
 
-        if rank == enums.Rank.two:
-            path += "2_of_"
-        elif rank == enums.Rank.three:
-            path += "3_of_"
-        elif rank == enums.Rank.four:
-            path += "4_of_"
-        elif rank == enums.Rank.five:
-            path += "5_of_"
-        elif rank == enums.Rank.six:
-            path += "6_of_"
-        elif rank == enums.Rank.seven:
-            path += "7_of_"
-        elif rank == enums.Rank.eight:
-            path += "8_of_"
-        elif rank == enums.Rank.nine:
-            path += "9_of_"
-        elif rank == enums.Rank.ten:
-            path += "10_of_"
-        elif rank == enums.Rank.jack:
-            path += "jack_of_"
-        elif rank == enums.Rank.queen:
-            path += "queen_of_"
-        elif rank == enums.Rank.king:
-            path += "king_of_"
-        elif rank == enums.Rank.ace:
-            path += "ace_of_"
-
-        if suit == enums.Suit.hearts:
-            path += "hearts"
-        elif suit == enums.Suit.diamonds:
-            path += "diamonds"
-        elif suit == enums.Suit.clubs:
-            path += "clubs"
-        elif suit == enums.Suit.spades:
-            path += "spades"
-
-        # use images with pictures for jack, queen, king
-        if enums.Rank.ten < rank < enums.Rank.ace:
-            path += "2.png"
+        if persona == enums.Persona.gymguy:
+            path += "gymguy_"
+        elif persona == enums.Persona.catlady:
+            path += "catlady_"
+        elif persona == enums.Persona.neatfreak:
+            path += "neatfreak_"
+        elif persona == enums.Persona.gamerguy:
+            path += "gamerguy_"
+        elif persona == enums.Persona.girlygirl:
+            path += "girlygirl_"
+        elif persona == enums.Persona.bookworm:
+            path += "bookworm_"
+        elif persona == enums.Persona.hippydude:
+            path += "hippydude_"
         else:
-            path += ".png"
+            raise Exception("invalid persona: " + str(persona))
+
+        path += str(rank)
+        path += ".png"
 
         return path
 

@@ -8,37 +8,25 @@ except ImportError as err:
 
 
 class Rank:
-    """ Enums for cards' ranks """
-    two = 2
-    three = 3
+    """ Enums for cards' ranks, which also corresponds to the number for a set, and points """
+    first = 3
+    three = first
     four = 4
     five = 5
-    six = 6
-    seven = 7
-    eight = 8
-    nine = 9
-    ten = 10
-    jack = 11
-    queen = 12
-    king = 13
-    ace = 14
+    last = five
 
 
-class Suit:
-    """ Enums for cards' suits """
-    hearts = 0
-    diamonds = 1
-    clubs = 2
-    spades = 3
-
-
-class DeckType:
-    """ Enums for deck types.
-    short - 6,7...,King,Ace
-    full - 2,3...,King,Ace
-    """
-    short = 36,
-    full = 52
+class Persona:
+    """ Enums for cards' personas """
+    first = 0
+    neatfreak = first
+    gymguy = neatfreak + 1
+    bookworm = gymguy + 1
+    catlady = bookworm + 1
+    girlygirl = catlady + 1
+    gamerguy = girlygirl + 1
+    hippydude = gamerguy + 1
+    last = hippydude
 
 
 class GrabPolicy:
@@ -47,20 +35,3 @@ class GrabPolicy:
     can_single_grab = 1,
     can_multi_grab = 2
 
-
-def get_suit_string_from_enum(suit):
-    """ Returns unicode character of a card suit
-    :param suit: int value that corresponds to one of enums from Suit class
-    :return: string with unicode character of the corresponding card suit.
-    Empty string if passed suit is not a valid Suit enum
-    """
-    if suit == Suit.hearts:
-        return u'\u2665'
-    elif suit == Suit.diamonds:
-        return u'\u2666'
-    elif suit == Suit.clubs:
-        return u'\u2663'
-    elif suit == Suit.spades:
-        return u'\u2660'
-    else:
-        return ''

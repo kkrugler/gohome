@@ -22,7 +22,7 @@ class CardsHolder(game_object.GameObject):
     card_json = None
 
     def __init__(self, pos=(0, 0), offset=(0, 0), grab_policy=enums.GrabPolicy.no_grab,
-                 last_card_callback=None):
+                 last_card_callback=None, refill=False):
         """
         :param pos: tuple with coordinates (x, y) - position of top left corner of cards holder
         :param offset: tuple (x, y) with values of offset between cards in the holder
@@ -35,6 +35,10 @@ class CardsHolder(game_object.GameObject):
         self.pos = pos
         self.offset = offset
         self.grabbed_card = None
+        self.refill = refill
+
+    def is_empty(self):
+        return len(self.cards) is 0
 
     def is_clicked(self, pos):
         """ Checks if a top card is clicked.
@@ -164,10 +168,15 @@ class CardsHolder(game_object.GameObject):
             card_.flip()
 
     def sort_cards(self):
-        """ Sort cards by suits and ranks from lower to higher.
-        Suits order: hearts, diamonds, clubs, spades.
+        """ Sort cards by persona and rank from lower to higher.
+        Persona order by enum order.
+        After sorting, re-do positions
         """
-        self.cards.sort(key=operator.attrgetter('suit', 'rank'))
+        self.cards.sort(key=operator.attrgetter('persona', 'rank'))
+        card_pos = self.pos
+        for card in self.cards:
+            card.set_pos(card_pos)
+            card_pos = (card_pos[0] + self.offset[0], card_pos[1] + self.offset[1])
 
     def move_all_cards(self, other, back_side_up=True):
         """ Moves all cards to other cards holder.

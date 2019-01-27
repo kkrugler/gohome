@@ -1,36 +1,38 @@
 {
-	"window": {
-		"size": [1140, 920],
-		"title": "Go Home!",
-		"background_color": [0, 153, 0]
-	},
-	"card": {
-		"size": [124, 186],
-		"front_sprite_path": "img/cards/",
-		"back_sprite_file": "img/back-side.png",
-		"move_speed": 80
-	},
-	"deck": {
-		"position": [20, 20],
-		"offset": [0.2, 0]
-	},
-    "stack": {
-        "deck_offset": [30, 0],
-        "inner_offset": [40, 0]
-    },
-	"pile": {
-        "position": [20, 240],
-        "offset": [160, 0],
-		"inner_offset": [0, 40]
-	},
-    "foundation": {
-        "position": [500, 20],
-        "offset": [160, 0],
-		"inner_offset": [0, 0]
-    },
-    "gui": {
-        "restart_button": [20, 850, 100, 50],
-        "win_label": [300, 480],
-		"win_text_size": 60
-    }
+  "window": {
+    "size": [1000, 800],
+    "title": "Go Home!",
+    "background_color": [31,37,87]
+  },
+  "card": {
+    "size": [114, 175],
+    "front_sprite_path": "img/cards/",
+    "back_sprite_file": "img/personas.png",
+    "move_speed": 80
+  },
+  "deck": {
+    "position": [200, 320],
+    "offset": [0.3, 0]
+  },
+  "revealed": {
+    "position": [350, 320],
+    "offset": [150, 0]
+  },
+  "computer_hand": {
+    "position": [20, 20],
+    "offset": [20, 0]
+  },
+  "user_hand": {
+    "position": [20, 600],
+    "offset": [20, 0]
+  },
+  "sets": {
+    "position": [700, 600],
+    "offset": [30, 0]
+  },
+  "gui": {
+    "restart_button": [20, 850, 100, 50],
+    "win_label": [300, 480],
+    "win_text_size": 60
+  }
 }
