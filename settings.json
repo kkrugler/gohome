@@ -7,12 +7,12 @@
   "card": {
     "size": [114, 175],
     "front_sprite_path": "img/cards/",
-    "back_sprite_file": "img/personas.png",
+    "back_sprite_file": "img/back-side.png",
     "move_speed": 80
   },
   "deck": {
-    "position": [200, 320],
-    "offset": [0.3, 0]
+    "position": [100, 320],
+    "offset": [2.5, 0]
   },
   "revealed": {
     "position": [350, 320],

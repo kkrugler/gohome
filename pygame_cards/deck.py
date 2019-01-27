@@ -24,7 +24,7 @@ class Deck(card_holder.CardsHolder):
         card_pos = pos
         for persona in range(enums.Persona.first, enums.Persona.last + 1):
             for rank in range(enums.Rank.first, enums.Rank.last + 1):
-                for i in range(3):
+                for i in range(rank):
                     self.cards.append(card.Card(persona, rank, card_pos, True))
                     card_pos = card_pos[0] + self.offset[0], card_pos[1] + self.offset[1]
 

@@ -50,7 +50,7 @@ class PlayerHand(card_holder.CardsHolder):
                 num_in_set = 1
             elif card != first_in_set:
                 # if (num_in_set == first_in_set.rank):
-                if (num_in_set == 3):
+                if (num_in_set == first_in_set.rank):
                     result.append(first_in_set)
 
                 first_in_set = card
@@ -58,7 +58,7 @@ class PlayerHand(card_holder.CardsHolder):
             else:
                 num_in_set += 1
 
-        if (first_in_set is not None) & (num_in_set == 3):
+        if (first_in_set is not None) & (num_in_set == first_in_set.rank):
             result.append(first_in_set)
 
         # Now we have to remove all of these sets from our hand.

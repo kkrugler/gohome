@@ -11,11 +11,11 @@ class Rank:
     """ Enums for cards' ranks, which also corresponds to the number for a set, and points """
     persona = 0
 
-    first = 3
-    three = first
+    first = 2
+    two = first
+    three = 3
     four = 4
-    five = 5
-    last = five
+    last = four
 
 
 class Persona:
