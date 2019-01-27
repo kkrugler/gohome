@@ -9,6 +9,8 @@ except ImportError as err:
 
 class Rank:
     """ Enums for cards' ranks, which also corresponds to the number for a set, and points """
+    persona = 0
+
     first = 3
     three = first
     four = 4

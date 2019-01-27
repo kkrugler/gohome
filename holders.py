@@ -32,7 +32,7 @@ class GrabbedCardsHolder(card_holder.CardsHolder):
     def render(self, screen):
         if len(self.cards) > 0:
             self.pos = self.cards[0].get_sprite().pos
-            self.update_position(self.offset)
+            self.update_position()
             _ = screen
 
 
@@ -44,13 +44,13 @@ class DeckRevealed(card_holder.CardsHolder):
         """
         :param pos: tuple with coordinates (x, y) for bottom card in the desk
         """
-        super().__init__(pos, offset, enums.GrabPolicy.can_single_grab, None, True)
+        super().__init__(pos, offset, (0, 0), enums.GrabPolicy.can_single_grab, None, True)
 
 
 class CompletedSet(card_holder.CardsHolder):
 
-    def __init__(self, pos, offset):
+    def __init__(self, pos, offset, limit):
         """
         :param pos: tuple with coordinates (x, y) for bottom card in the desk
         """
-        super().__init__(pos, offset, enums.GrabPolicy.no_grab, None, True)
+        super().__init__(pos, offset, limit, enums.GrabPolicy.no_grab, None, True)

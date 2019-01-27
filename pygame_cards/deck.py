@@ -18,7 +18,8 @@ class Deck(card_holder.CardsHolder):
         :param last_card_callback: function that should be called when the last card is
             removed from the deck
         """
-        card_holder.CardsHolder.__init__(self, pos, offset, enums.GrabPolicy.can_single_grab, last_card_callback)
+        card_holder.CardsHolder.__init__(self, pos, offset, (0, 0),
+                                         enums.GrabPolicy.can_single_grab, last_card_callback)
 
         card_pos = pos
         for persona in range(enums.Persona.first, enums.Persona.last + 1):
@@ -30,4 +31,4 @@ class Deck(card_holder.CardsHolder):
     def shuffle(self):
         """ Shuffles cards in the deck randomly """
         shuffle(self.cards)
-        self.update_position(self.offset)
+        self.update_position()

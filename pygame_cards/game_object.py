@@ -22,6 +22,9 @@ class GameObject(object):
         self.children = children
         self.grab_policy = grab_policy
 
+    def can_grab(self):
+        return False
+
     def add_child(self, child):
         """ Adds child to the list of children objects of a composite object.
         :param child: child to add to the list of children objects

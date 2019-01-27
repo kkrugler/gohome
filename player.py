@@ -9,8 +9,8 @@ except ImportError as err:
 
 class PlayerHand(card_holder.CardsHolder):
 
-    def __init__(self, pos, offset):
-        super().init(pos, offset)
+    def __init__(self, pos, offset, limit=(0,0)):
+        super().__init__(pos, offset, limit)
 
     def add_cards(self, cards):
         for card in cards:
@@ -77,12 +77,16 @@ class PlayerHand(card_holder.CardsHolder):
                 else:
                     offset += 1
 
-            # And resort, so positions are set properly
-            self.sort_cards()
+            self.update_position()
 
         return result
 
-class ComputerPlayer(PlayerHand):
+class UserHand(PlayerHand):
+
+    def __init__(self, pos, offset, limit):
+        super().__init__(pos, offset, limit)
+
+class ComputerHand(PlayerHand):
 
     def make_play(self, deck, revealed):
         '''
@@ -91,5 +95,5 @@ class ComputerPlayer(PlayerHand):
         :return: Tuple with ("deck"), ("revealed", <index>), ("player", <card>)
         '''
 
-        
+
         return ("deck")

@@ -21,8 +21,8 @@ class CardsHolder(game_object.GameObject):
 
     card_json = None
 
-    def __init__(self, pos=(0, 0), offset=(0, 0), grab_policy=enums.GrabPolicy.no_grab,
-                 last_card_callback=None, refill=False):
+    def __init__(self, pos=(0, 0), offset=(0, 0), limit=(0, 0),
+                 grab_policy=enums.GrabPolicy.no_grab, last_card_callback=None, refill=False):
         """
         :param pos: tuple with coordinates (x, y) - position of top left corner of cards holder
         :param offset: tuple (x, y) with values of offset between cards in the holder
@@ -34,8 +34,11 @@ class CardsHolder(game_object.GameObject):
         self.last_card_callback = last_card_callback
         self.pos = pos
         self.offset = offset
-        self.grabbed_card = None
+        self.limit = limit
         self.refill = refill
+
+    def can_grab(self):
+        return True
 
     def is_empty(self):
         return len(self.cards) is 0
@@ -98,7 +101,7 @@ class CardsHolder(game_object.GameObject):
         :param bot: if current player is a 'bot', i.e. virtual adversary (default False)
         :return: True if there is a card grabbed, False otherwise
         """
-        if not self.grabbed_card and len(self.cards) > 0:
+        if len(self.cards) > 0:
             if bot or self.cards[-1].check_mouse(pos, True):
                 if self.cards[-1].back_up:
                     self.cards[-1].flip()
@@ -112,7 +115,7 @@ class CardsHolder(game_object.GameObject):
     def add_card(self, card_, on_top=True):
         """ Appends a card to the list of self.cards
         :param card_:  object of the Card class to be appended to the list
-        :param on_top: bolean, True if the card should be put on top, False in the bottom
+        :param on_top: boolean, True if the card should be put on top, False in the bottom
         """
         if isinstance(card_, card.Card):
             card_.unclick()
@@ -126,7 +129,7 @@ class CardsHolder(game_object.GameObject):
                 self.cards.append(card_)
             else:
                 self.cards.insert(0, card_)
-                self.update_position(self.offset)
+                self.update_position()
 
     def pop_card(self, top):
         """ Removes top or bottom cards from the list and returns it.
@@ -138,10 +141,16 @@ class CardsHolder(game_object.GameObject):
         else:
             if len(self.cards) == 1 and self.last_card_callback is not None:
                 self.last_card_callback(self.cards[0])
+
+
             if top:
-                return self.cards.pop()
+                result = self.cards.pop()
             else:
-                return self.cards.pop(0)
+                result = self.cards.pop(0)
+
+            # Update positions in case we can spread things out now
+            self.update_position()
+            return result
 
     def pop_top_card(self):
         """ Removes top card from the list and returns it.
@@ -157,11 +166,6 @@ class CardsHolder(game_object.GameObject):
         """
         return self.pop_card(top=False)
 
-    def drop_card(self):
-        """ Drops grabbed card."""
-        self.grabbed_card = False
-        return self.pop_top_card()
-
     def flip_cards(self):
         """ Flip cards from face-up to face-down and vice versa """
         for card_ in self.cards:
@@ -173,10 +177,7 @@ class CardsHolder(game_object.GameObject):
         After sorting, re-do positions
         """
         self.cards.sort(key=operator.attrgetter('persona', 'rank'))
-        card_pos = self.pos
-        for card in self.cards:
-            card.set_pos(card_pos)
-            card_pos = (card_pos[0] + self.offset[0], card_pos[1] + self.offset[1])
+        self.update_position()
 
     def move_all_cards(self, other, back_side_up=True):
         """ Moves all cards to other cards holder.
@@ -191,14 +192,31 @@ class CardsHolder(game_object.GameObject):
                         card_.flip()
                     other.add_card(card_)
 
-    def update_position(self, offset):
-        """ Updates position of all cards according to the offset passed
-        :param offset: tuple (x, y) with values of offset for each card
+    def update_position(self):
+        """ Updates position of all cards
         """
+
+        if not self.cards:
+            return
+
+        # First see if we need to reduce our offset in order to
+        # constrain to the limit.
+        x_offset = self.offset[0]
+        if self.limit[0] != 0:
+            max_x_range = self.limit[0] - self.pos[0]
+            max_x_offset = max_x_range / len(self.cards)
+            x_offset = min(x_offset, max_x_offset)
+
+        y_offset = self.offset[1];
+        if self.limit[1] != 0:
+            max_y_range = self.limit[1] - self.pos[1]
+            max_y_offset = max_y_range / len(self.cards)
+            y_offset = min(y_offset, max_y_offset)
+
         pos_ = self.pos
         for card_ in self.cards:
             card_.set_pos(pos_)
-            pos_ = pos_[0] + offset[0], pos_[1] + offset[1]
+            pos_ = pos_[0] + x_offset, pos_[1] + y_offset
 
     def check_collide(self, card_):
         """ Checks if current cards holder collides with other card.

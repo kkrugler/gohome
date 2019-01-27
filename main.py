@@ -4,9 +4,10 @@ try:
     import os
     import pygame
 
-    from pygame_cards import controller, game_app, deck, card_holder, enums
+    from pygame_cards import controller, game_app, deck, card_holder, enums, card
     import holders
     import player
+    import personas
 
 except ImportError as err:
     print("Fail loading a module in file:", __file__, "\n", err)
@@ -14,6 +15,9 @@ except ImportError as err:
 
 
 class GoHomeController(controller.Controller):
+
+    def __init__(self):
+        super().__init__()
 
     '''
     One-time setup of game environment
@@ -28,8 +32,8 @@ class GoHomeController(controller.Controller):
 
         deck_pos = self.settings_json["deck"]["position"]
         deck_offset = self.settings_json["deck"]["offset"]
-        self.custom_dict["deck"] = deck.Deck(deck_pos, deck_offset, None)
-        self.add_rendered_object(self.custom_dict["deck"])
+        self.deck = deck.Deck(deck_pos, deck_offset, None)
+        self.add_rendered_object(self.deck)
 
         revealed_pos = self.settings_json["revealed"]["position"]
         revealed_offset = self.settings_json["revealed"]["offset"]
@@ -40,34 +44,51 @@ class GoHomeController(controller.Controller):
             self.add_rendered_object(self.custom_dict["revealed"][i])
             revealed_pos = (revealed_pos[0] + revealed_offset[0], revealed_pos[1] + revealed_offset[1])
 
-        user_pos = self.settings_json["computer_hand"]["position"]
-        user_offset = self.settings_json["computer_hand"]["offset"]
-        self.custom_dict["computer_hand"] = player.ComputerHand(user_pos, user_offset)
-        self.add_rendered_object(self.custom_dict["computer_hand"])
+        computer_pos = self.settings_json["computer_hand"]["position"]
+        computer_offset = self.settings_json["computer_hand"]["offset"]
+        computer_limit = self.settings_json["computer_hand"]["limit"]
+        self.computer_hand = player.ComputerHand(computer_pos, computer_offset, computer_limit)
+        self.add_rendered_object(self.computer_hand)
 
-        user_pos = self.settings_json["user_hand"]["position"]
-        user_offset = self.settings_json["user_hand"]["offset"]
-        self.custom_dict["user_hand"] = player.PlayerHand(user_pos, user_offset)
-        self.add_rendered_object(self.custom_dict["user_hand"])
+        self.personas = personas.Personas()
+        cards_pos = self.settings_json["user_persona"]["position"]
+        self.user_persona = self.personas.next_persona()
+        self.user_persona.set_pos(cards_pos)
+        self.add_rendered_object(self.user_persona)
 
-        user_pos = self.settings_json["sets"]["position"]
-        user_offset = self.settings_json["sets"]["offset"]
-        self.custom_dict["sets"] = holders.CompletedSet(user_pos, user_offset)
-        self.add_rendered_object(self.custom_dict["sets"])
+        cards_pos = self.settings_json["computer_persona"]["position"]
+        self.computer_persona = self.personas.next_persona()
+        self.computer_persona.set_pos(cards_pos)
+        # Don't show user the computer's persona
+        self.computer_persona.flip()
+        self.add_rendered_object(self.computer_persona)
 
-        self.custom_dict["grabbed_cards_holder"] = holders.GrabbedCardsHolder((0, 0), 0)
-        self.add_rendered_object(self.custom_dict["grabbed_cards_holder"])
-        self.custom_dict["owner_of_grabbed_card"] = None
+        cards_pos = self.settings_json["user_hand"]["position"]
+        cards_offset = self.settings_json["user_hand"]["offset"]
+        cards_limit = self.settings_json["user_hand"]["limit"]
+        self.user_hand = player.UserHand(cards_pos, cards_offset, cards_limit)
+        self.add_rendered_object(self.user_hand)
+
+        cards_pos = self.settings_json["user_sets"]["position"]
+        cards_offset = self.settings_json["user_sets"]["offset"]
+        cards_limit = self.settings_json["user_sets"]["limit"]
+        self.user_sets = holders.CompletedSet(cards_pos, cards_offset, cards_limit)
+        self.add_rendered_object(self.user_sets)
+
+        cards_pos = self.settings_json["computer_sets"]["position"]
+        cards_offset = self.settings_json["computer_sets"]["offset"]
+        cards_limit = self.settings_json["computer_sets"]["limit"]
+        self.computer_sets = holders.CompletedSet(cards_pos, cards_offset, cards_limit)
+        self.add_rendered_object(self.computer_sets)
 
         self.gui_interface.show_button(self.settings_json["gui"]["restart_button"],
                                        self.restart_game, "Restart")
 
-
     def restart_game(self):
         pygame.mixer.music.rewind()
 
-        self.custom_dict["revealed"].move_all_cards(self.custom_dict["deck"])
-        self.custom_dict["user_hand"].move_all_cards(self.custom_dict["deck"])
+        self.custom_dict["revealed"].move_all_cards(self.deck)
+        self.user_hand.move_all_cards(self.deck)
 
         if isinstance(self.gui_interface, game_app.GameApp.GuiInterface):
             self.gui_interface.hide_by_id("win_label1")
@@ -77,29 +98,36 @@ class GoHomeController(controller.Controller):
 
     def start_game(self):
 
-        self.custom_dict["deck"].shuffle()
-        #self.deal_cards()
+        self.deck.shuffle()
+        # self.deal_cards()
 
         for i in range(3):
-            card_ = self.custom_dict["deck"].pop_top_card()
+            card_ = self.deck.pop_top_card()
             card_.flip()
             self.custom_dict["revealed"][i].add_card(card_)
 
         for i in range(7):
-            card_ = self.custom_dict["deck"].pop_top_card()
+            card_ = self.deck.pop_top_card()
             card_.flip()
-            self.custom_dict["user_hand"].add_card(card_)
+            self.user_hand.add_card(card_)
 
-        self.custom_dict["user_hand"].sort_cards()
-        self.check_for_sets()
+            card_ = self.deck.pop_top_card()
+            self.computer_hand.add_card(card_)
+
+        self.user_hand.sort_cards()
+        self.check_for_sets(self.user_hand, self.user_sets)
+
+        self.computer_hand.sort_cards()
+        self.check_for_sets(self.computer_hand, self.computer_sets)
 
         self.custom_dict["game_start_time"] = pygame.time.get_ticks()
-        #pygame.mixer.music.play(-1)
+        pygame.mixer.music.play(-1)
 
-    def check_for_sets(self):
-        sets = self.custom_dict["user_hand"].find_sets()
-        for card in sets:
-            self.custom_dict["sets"].add_card(card)
+    def check_for_sets(self, hand, set):
+        new_sets = hand.find_sets()
+        for card in new_sets:
+            set.add_card(card)
+            set.update_position()
 
     def check_win(self):
         win = False
@@ -138,18 +166,22 @@ class GoHomeController(controller.Controller):
 
     def process_mouse_down(self, pos):
         for obj in self.rendered_objects:
+            if not obj.can_grab():
+                continue
+
             grabbed_cards = obj.try_grab_card(pos)
             if grabbed_cards is not None:
                 for card_ in grabbed_cards:
-                    if (card_.back_up):
+                    if card_.back_up:
                         card_.flip()
-                    self.custom_dict["user_hand"].add_card(card_, True)
 
-                self.custom_dict["user_hand"].sort_cards()
-                self.check_for_sets()
+                    self.user_hand.add_card(card_, True)
 
-                if obj.refill & (not self.custom_dict["deck"].is_empty()):
-                    deck_card = self.custom_dict["deck"].pop_top_card()
+                self.user_hand.sort_cards()
+                self.check_for_sets(self.user_hand, self.user_sets)
+
+                if obj.refill and (not self.deck.is_empty()):
+                    deck_card = self.deck.pop_top_card()
                     deck_card.flip()
                     obj.add_card(deck_card, True)
 

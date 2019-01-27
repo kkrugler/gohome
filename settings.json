@@ -1,6 +1,6 @@
 {
   "window": {
-    "size": [1000, 800],
+    "size": [1200, 800],
     "title": "Go Home!",
     "background_color": [31,37,87]
   },
@@ -18,17 +18,31 @@
     "position": [350, 320],
     "offset": [150, 0]
   },
+  "computer_persona": {
+    "position": [20, 20]
+  },
   "computer_hand": {
-    "position": [20, 20],
-    "offset": [20, 0]
+    "position": [150, 20],
+    "offset": [30, 0],
+    "limit": [575, 0]
+  },
+  "computer_sets": {
+    "position": [700, 20],
+    "offset": [30, 0],
+    "limit": [1000, 0]
+  },
+  "user_persona": {
+    "position": [20, 560]
   },
   "user_hand": {
-    "position": [20, 600],
-    "offset": [20, 0]
+    "position": [150, 560],
+    "offset": [30, 0],
+    "limit": [575, 0]
   },
-  "sets": {
-    "position": [700, 600],
-    "offset": [30, 0]
+  "user_sets": {
+    "position": [700, 560],
+    "offset": [30, 0],
+    "limit": [1000, 0]
   },
   "gui": {
     "restart_button": [20, 850, 100, 50],

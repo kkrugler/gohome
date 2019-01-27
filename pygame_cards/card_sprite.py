@@ -106,6 +106,7 @@ class CardSprite(AbstractPygameCardSprite):
     def __init__(self, persona, rank, pos, back_up=False):
         if CardSprite.card_json is None:
             raise ValueError('CardSprite.card_json is not initialized')
+
         AbstractPygameCardSprite.__init__(self, pos)
 
         temp_image = pygame.image.load(get_img_full_path(
@@ -134,23 +135,26 @@ class CardSprite(AbstractPygameCardSprite):
         path = CardSprite.card_json["front_sprite_path"]
 
         if persona == enums.Persona.gymguy:
-            path += "gymguy_"
+            path += "gymguy"
         elif persona == enums.Persona.catlady:
-            path += "catlady_"
+            path += "catlady"
         elif persona == enums.Persona.neatfreak:
-            path += "neatfreak_"
+            path += "neatfreak"
         elif persona == enums.Persona.gamerguy:
-            path += "gamerguy_"
+            path += "gamerguy"
         elif persona == enums.Persona.girlygirl:
-            path += "girlygirl_"
+            path += "girlygirl"
         elif persona == enums.Persona.bookworm:
-            path += "bookworm_"
+            path += "bookworm"
         elif persona == enums.Persona.hippydude:
-            path += "hippydude_"
+            path += "hippydude"
         else:
             raise Exception("invalid persona: " + str(persona))
 
-        path += str(rank)
+        if rank != enums.Rank.persona:
+            path += "_"
+            path += str(rank)
+
         path += ".png"
 
         return path
