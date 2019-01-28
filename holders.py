@@ -2,7 +2,7 @@ try:
     import sys
     import pygame
 
-    from pygame_cards import card_holder, enums, card
+    import card_holder, enums, card
 except ImportError as err:
     print("Fail loading a module in file:", __file__, "\n", err)
     sys.exit(2)

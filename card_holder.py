@@ -3,7 +3,7 @@ try:
     import sys
     import operator
 
-    from pygame_cards import game_object, card, enums
+    import game_object, card, enums
 except ImportError as err:
     print("Fail loading a module in file:", __file__, "\n", err)
     sys.exit(2)

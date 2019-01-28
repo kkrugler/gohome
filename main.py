@@ -5,7 +5,7 @@ try:
     from random import choice
     import pygame
 
-    from pygame_cards import controller, game_app, deck, card_holder, enums, card
+    import controller, game_app, deck, card_holder, enums, card
     from enums import GameState
     import holders
     import player
@@ -92,9 +92,13 @@ class GoHomeController(controller.Controller):
     def restart_game(self):
         pygame.mixer.music.rewind()
 
-        self.revealed.move_all_cards(self.deck)
+        self.revealed[0].move_all_cards(self.deck)
+        self.revealed[1].move_all_cards(self.deck)
+        self.revealed[2].move_all_cards(self.deck)
+
         self.user_hand.move_all_cards(self.deck)
         self.user_sets.move_all_cards(self.deck)
+        
         self.computer_hand.move_all_cards(self.deck)
         self.computer_sets.move_all_cards(self.deck)
 

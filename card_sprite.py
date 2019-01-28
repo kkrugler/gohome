@@ -6,7 +6,7 @@ try:
     import math
     import pygame
 
-    from pygame_cards import enums
+    import enums
 except ImportError as err:
     print("Fail loading a module in file:", __file__, "\n", err)
     sys.exit(2)

@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 try:
     import sys
-    from pygame_cards import card_sprite
-    from pygame_cards import game_object
+    import card_sprite, game_object
 except ImportError as err:
     print("Fail loading a module in file:", __file__, "\n", err)
     sys.exit(2)

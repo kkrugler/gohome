@@ -2,7 +2,7 @@ try:
     import sys
     from random import shuffle
 
-    from pygame_cards import enums, card
+    import enums, card
 except ImportError as err:
     print("Fail loading a module in file:", __file__, "\n", err)
     sys.exit(2)
