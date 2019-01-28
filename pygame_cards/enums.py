@@ -33,7 +33,18 @@ class Persona:
 
 class GrabPolicy:
     """ Enums for different grab policies of cards' holders."""
-    no_grab = 0,
-    can_single_grab = 1,
-    can_multi_grab = 2
+    no_grab_or_click = 0
+    can_grab_top = 1
+    can_click_any = 2
+
+class GameState:
+    starting = -1
+    user_turn = 0
+    user_picking = 1
+    user_stealing = 2
+    computer_turn = 3
+    computer_picking = 4
+    computer_stealing = 5
+    done = 6
+
 

@@ -34,6 +34,10 @@ class Card(game_object.GameObject):
         """
         self.sprite.render(screen)
 
+    def reveal(self):
+        if self.back_up:
+            self.flip()
+
     def flip(self):
         """ Flips the card from face-up to face-down and vice versa """
         self.back_up = not self.back_up
@@ -88,3 +92,6 @@ class Card(game_object.GameObject):
 
     def __eq__(self, other):
         return (self.persona == other.persona) & (self.rank == other.rank)
+
+    def __repr__(self):
+        return card_sprite.CardSprite.get_card_name(self.persona, self.rank)

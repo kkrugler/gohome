@@ -9,12 +9,16 @@ except ImportError as err:
 
 class PlayerHand(card_holder.CardsHolder):
 
-    def __init__(self, pos, offset, limit=(0,0)):
-        super().__init__(pos, offset, limit)
+    def __init__(self, pos, offset, limit=(0,0), grab_policy=enums.GrabPolicy.no_grab_or_click):
+        super().__init__(pos, offset, limit, grab_policy)
 
     def add_cards(self, cards):
         for card in cards:
             self.add_card(card, True)
+
+    def get_end_pos(self):
+        num_cards = len(self.cards) + 1
+        return self.pos[0] + (num_cards * self.offset[0]), self.pos[1] + (num_cards * self.offset[1])
 
     def steal_cards(self, card):
         '''
@@ -84,7 +88,7 @@ class PlayerHand(card_holder.CardsHolder):
 class UserHand(PlayerHand):
 
     def __init__(self, pos, offset, limit):
-        super().__init__(pos, offset, limit)
+        super().__init__(pos, offset, limit, enums.GrabPolicy.can_click_any)
 
 class ComputerHand(PlayerHand):
 

@@ -19,7 +19,7 @@ class Deck(card_holder.CardsHolder):
             removed from the deck
         """
         card_holder.CardsHolder.__init__(self, pos, offset, (0, 0),
-                                         enums.GrabPolicy.can_single_grab, last_card_callback)
+                                         enums.GrabPolicy.can_grab_top, last_card_callback)
 
         card_pos = pos
         for persona in range(enums.Persona.first, enums.Persona.last + 1):

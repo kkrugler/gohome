@@ -15,7 +15,7 @@ class GameObject(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, children=[], grab_policy=enums.GrabPolicy.no_grab):
+    def __init__(self, children=[], grab_policy=enums.GrabPolicy.no_grab_or_click):
         """
         :param children: list of children objects
         """
@@ -23,7 +23,10 @@ class GameObject(object):
         self.grab_policy = grab_policy
 
     def can_grab(self):
-        return False
+        return self.grab_policy == enums.GrabPolicy.can_grab_top
+
+    def can_click(self):
+        return self.grab_policy == enums.GrabPolicy.can_click_any
 
     def add_child(self, child):
         """ Adds child to the list of children objects of a composite object.

@@ -173,7 +173,7 @@ class GameApp(object):
             :param id_: string with unique ID of GUI element
             """
             for element in self.gui_list:
-                if hasattr(element, "id") and element.id_ == id_:
+                if hasattr(element, "id_") and element.id_ == id_:
                     self.gui_list.remove(element)
                     break
 

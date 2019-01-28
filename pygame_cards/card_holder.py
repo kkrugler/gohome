@@ -22,7 +22,7 @@ class CardsHolder(game_object.GameObject):
     card_json = None
 
     def __init__(self, pos=(0, 0), offset=(0, 0), limit=(0, 0),
-                 grab_policy=enums.GrabPolicy.no_grab, last_card_callback=None, refill=False):
+                 grab_policy=enums.GrabPolicy.no_grab_or_click, last_card_callback=None, refill=False):
         """
         :param pos: tuple with coordinates (x, y) - position of top left corner of cards holder
         :param offset: tuple (x, y) with values of offset between cards in the holder
@@ -36,9 +36,6 @@ class CardsHolder(game_object.GameObject):
         self.offset = offset
         self.limit = limit
         self.refill = refill
-
-    def can_grab(self):
-        return True
 
     def is_empty(self):
         return len(self.cards) is 0
@@ -57,79 +54,50 @@ class CardsHolder(game_object.GameObject):
         else:
             return False
 
-    def check_click(self, pos):
-        """ Checks if a top card is clicked.
-        :param pos: tuple with coordinates (x, y) - position of mouse click/screen touch.
-        :return: True if top card is clicked, False otherwise
-        """
-        if len(self.cards) is not 0:
-            if self.cards[-1].check_mouse(pos, True):
-                return True
-        return False
-
-    def try_grab_card(self, pos):
+    def find_clicked_card(self, pos):
         """ Tries to grab a card (or multiple cards) with a mouse click.
         :param pos: tuple with coordinates (x, y) - position of mouse click/screen touch.
-        :return: List with Card object if grabbed or None if card can't be grabbed or mouse click
+        :return: Card object if grabbed or None if card can't be grabbed or mouse click
                  is not on the holder.
         """
-        grabbed_cards = None
-        if len(self.cards) > 0:
-            if self.grab_policy == enums.GrabPolicy.can_single_grab:
-                if self.check_click(pos):
-                    grabbed_cards = [self.pop_top_card()]
-            elif self.grab_policy == enums.GrabPolicy.can_multi_grab:
-                index = -1
-                for card_ in reversed(self.cards):
-                    if card_.back_up:
-                        break
-                    if card_.check_mouse(pos, True):
-                        index = self.cards.index(card_)
-                        break
+        if (self.grab_policy == enums.GrabPolicy.no_grab_or_click) or (len(self.cards) == 0):
+            return None
 
-                if index != -1:
-                    grabbed_cards = [c for c in self.cards if self.cards.index(c) >= index]
-                    grabbed_cards.reverse()
-                    self.cards[:] = [c for c in self.cards if self.cards.index(c) < index]
-        return grabbed_cards
-
-    def check_grab(self, pos, bot=False):
-        """ Tries to grab a card in specified position.
-        Returns True if card was grabbed or there is already grabbed card that is not dropped yet.
-        Otherwise returns False.
-        :param pos: tuple with coordinates (x, y) - position of mouse click/screen touch.
-        :param bot: if current player is a 'bot', i.e. virtual adversary (default False)
-        :return: True if there is a card grabbed, False otherwise
-        """
-        if len(self.cards) > 0:
-            if bot or self.cards[-1].check_mouse(pos, True):
-                if self.cards[-1].back_up:
-                    self.cards[-1].flip()
-                self.grabbed_card = True
-                return True
+        if self.grab_policy == enums.GrabPolicy.can_grab_top:
+            top_card = self.cards[-1]
+            if top_card.is_clicked(pos):
+                return self.pop_top_card()
             else:
-                return False
-        else:
-            return True
+                return None
+
+        clicked_card = None
+        for card_ in self.cards:
+            if card_.is_clicked(pos):
+                clicked_card = card_
+
+        return clicked_card
 
     def add_card(self, card_, on_top=True):
         """ Appends a card to the list of self.cards
         :param card_:  object of the Card class to be appended to the list
         :param on_top: boolean, True if the card should be put on top, False in the bottom
         """
-        if isinstance(card_, card.Card):
-            card_.unclick()
-            if on_top:
-                pos_ = self.pos
-                if len(self.cards) is not 0:
-                    length = len(self.cards)
-                    pos_ = (self.pos[0] + length * self.offset[0],
-                            self.pos[1] + length * self.offset[1])
-                card_.set_pos(pos_)
-                self.cards.append(card_)
-            else:
-                self.cards.insert(0, card_)
-                self.update_position()
+        card_.unclick()
+        if on_top:
+            pos_ = self.pos
+            if len(self.cards) is not 0:
+                length = len(self.cards)
+                pos_ = (self.pos[0] + length * self.offset[0],
+                        self.pos[1] + length * self.offset[1])
+            card_.set_pos(pos_)
+            self.cards.append(card_)
+        else:
+            self.cards.insert(0, card_)
+            self.update_position()
+
+    def remove_card(self, card):
+        index = self.cards.index(card)
+        self.cards.pop(index)
 
     def pop_card(self, top):
         """ Removes top or bottom cards from the list and returns it.

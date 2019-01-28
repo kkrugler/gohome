@@ -131,30 +131,34 @@ class CardSprite(AbstractPygameCardSprite):
         self.back_up = not self.back_up
 
     @staticmethod
-    def get_image_path(persona, rank):
-        path = CardSprite.card_json["front_sprite_path"]
-
+    def get_card_name(persona, rank):
         if persona == enums.Persona.gymguy:
-            path += "gymguy"
+            name = "gymguy"
         elif persona == enums.Persona.catlady:
-            path += "catlady"
+            name = "catlady"
         elif persona == enums.Persona.neatfreak:
-            path += "neatfreak"
+            name = "neatfreak"
         elif persona == enums.Persona.gamerguy:
-            path += "gamerguy"
+            name = "gamerguy"
         elif persona == enums.Persona.girlygirl:
-            path += "girlygirl"
+            name = "girlygirl"
         elif persona == enums.Persona.bookworm:
-            path += "bookworm"
+            name = "bookworm"
         elif persona == enums.Persona.hippydude:
-            path += "hippydude"
+            name = "hippydude"
         else:
             raise Exception("invalid persona: " + str(persona))
 
         if rank != enums.Rank.persona:
-            path += "_"
-            path += str(rank)
+            name += "_"
+            name += str(rank)
 
+        return name
+
+    @staticmethod
+    def get_image_path(persona, rank):
+        path = CardSprite.card_json["front_sprite_path"]
+        path += CardSprite.get_card_name(persona, rank)
         path += ".png"
 
         return path

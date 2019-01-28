@@ -20,22 +20,6 @@ def draw_empty_card_pocket(holder, screen):
         pygame.draw.rect(screen, (77, 77, 77), rect, 2)
 
 
-class GrabbedCardsHolder(card_holder.CardsHolder):
-    """Holds cards currently grabbed by the user (ie under the mouse with the button held down)"""
-    def add_card(self, card_, on_top=False):
-        if isinstance(card_, card.Card):
-            if on_top:
-                self.cards.append(card_)
-            else:
-                self.cards.insert(0, card_)
-
-    def render(self, screen):
-        if len(self.cards) > 0:
-            self.pos = self.cards[0].get_sprite().pos
-            self.update_position()
-            _ = screen
-
-
 class DeckRevealed(card_holder.CardsHolder):
     """ Container for revealed cards.
     """
@@ -44,7 +28,7 @@ class DeckRevealed(card_holder.CardsHolder):
         """
         :param pos: tuple with coordinates (x, y) for bottom card in the desk
         """
-        super().__init__(pos, offset, (0, 0), enums.GrabPolicy.can_single_grab, None, True)
+        super().__init__(pos, offset, (0, 0), enums.GrabPolicy.can_grab_top, None, True)
 
 
 class CompletedSet(card_holder.CardsHolder):
@@ -53,4 +37,14 @@ class CompletedSet(card_holder.CardsHolder):
         """
         :param pos: tuple with coordinates (x, y) for bottom card in the desk
         """
-        super().__init__(pos, offset, limit, enums.GrabPolicy.no_grab, None, True)
+        super().__init__(pos, offset, limit, enums.GrabPolicy.no_grab_or_click, None, True)
+
+    def calc_score(self, persona):
+        score = 0
+        for card in self.cards:
+            set_score = card.rank
+            if card.persona == persona.persona:
+                set_score *= 2
+            score += set_score
+
+        return score

@@ -110,7 +110,7 @@ class Controller(object):
         if len(self.moves) > 0:
             self.moves[0].update()
             if self.moves[0].is_completed():
-                self.moves.pop(0)
+                self.remove_rendered_object(self.moves.pop(0))
 
     def add_rendered_object(self, obj):
         """ Adds object to the list of objects to be rendered by the Controller.
@@ -123,13 +123,11 @@ class Controller(object):
         elif isinstance(obj, game_object.GameObject):
             self.rendered_objects.append(obj)
 
-    def remove_rendered_object(self, id_):
-        """ Removes an object from the list of rendered_objects by id
-        :param id_: string with unique object id
+    def remove_rendered_object(self, obj):
+        """ Removes an object from the list of rendered_objects
+        :param obj: object to remove
         """
-        # TODO: implement
-        _ = id_
-        pass
+        self.rendered_objects.remove(obj)
 
     def add_move(self, cards, destination_pos, speed=None):
         """
@@ -140,12 +138,12 @@ class Controller(object):
                                 should be moved.
         :param speed: integer number, on how many pixels card(s) should move per frame.
         """
-        if isinstance(cards, list):
-            sprites = []
-            for card_ in cards:
-                if isinstance(card_, card.Card):
-                    sprites.append(card_.sprite)
-            if len(sprites) != 0:
-                self.moves.append(card_sprite.SpriteMove(sprites, destination_pos, speed))
-        elif isinstance(cards, card.Card):
-            self.moves.append(card_sprite.SpriteMove(cards.sprite, destination_pos, speed))
+        sprites = []
+        for card_ in cards:
+            sprites.append(card_.sprite)
+            self.add_rendered_object(card_)
+
+        self.moves.append(card_sprite.SpriteMove(sprites, destination_pos, speed))
+
+    def has_moves(self):
+        return len(self.moves) > 0
