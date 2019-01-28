@@ -98,7 +98,7 @@ class GoHomeController(controller.Controller):
 
         self.user_hand.move_all_cards(self.deck)
         self.user_sets.move_all_cards(self.deck)
-        
+
         self.computer_hand.move_all_cards(self.deck)
         self.computer_sets.move_all_cards(self.deck)
 
